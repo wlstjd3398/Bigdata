@@ -5,37 +5,64 @@
 
 
 """
-# bs4 = beautifulsoup 패키지설치
-
+import os
 
 import requests as req
-
 from bs4 import BeautifulSoup as bs
 
-# 페이지 요청(네이버뉴스 헤드라인)
-response = req.get('https://news.naver.com/', headers={'User-Agent': 'Mozilla/5.0'})
-#print(response.text)
 
-# 페이지 파싱 dom = document object model
+from datetime import datetime
+
+
+response = req.get('https://www.weather.go.kr/w/obs-climate/land/city-obs.do')
+# print(response.text)
+
+# 페이지 파싱
 dom = bs(response.text, 'html.parser')
-titles = dom.select('#today_main_news > div.hdline_news > ul > li > div.hdline_article_tit > a')
-#print(titles)
+trs = dom.select('#weather_table > tbody > tr')
 
-# 파싱 데이터 출력(strip : 공백제거)
-for tit1 in titles:
-    print(tit1.next.strip())
+# 데이터 출력(find_all 은 정규식와 매치되는 모든 문자열을 리스트형식으로 리턴한다), (enumerate 열거하다)
+#for i, tr in enumerate(trs):
+ #   tds = tr.find_all('td')
 
-
-# 다음 뉴스 랭킹 1 ~ 10 출력하기
+ #   print("%d, %s, %s" % (i, tds[0].text, tds[5].text))
 
 
-resp = req.get('http://news.daum.net/ranking/popular')
 
-dom = bs(resp.text, 'html.parser')
-news_tits = dom.select('#mArticle > div.rank_news > ul.list_news2 > li:nth-child(n) > div.cont_thumb > strong > a')
+ # 디렉터리 생성
+dir = "./weather/{:%Y-%m-%d}".format(datetime.now())
 
-#print(news.tits)
+if not os.path.exists(dir):
+        # 경로에 해당 디렉터리가 존재하지 않으면 날짜기반으로 디렉터리 만든다
+        os.makedirs(dir)
 
-for i in range(10):
-    print(news_tits[i].text)
+# 데이터 파일 생성
+fname = "{:%Y-%m-%d-%H-%M.txt}".format(datetime.now())
+file = open(dir+'/'+fname, mode='w', encoding='utf-8')
+
+# 데이터 파일 저장
+file.write('지역,현재일기,시정,운량,중하운량,현재기온,이슬점온도,불쾌지수,일강수,습도,풍향,풍속,해면기압\n')
+for i, tr in enumerate(trs):
+    tds = tr.find_all('td')
+    file.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(tds[0].text if tds[0].text.strip() else 'NA',
+                                                               tds[1].text if tds[1].text.strip() else 'NA',
+                                                               tds[2].text if tds[2].text.strip() else 'NA',
+                                                               tds[3].text if tds[3].text.strip() else 'NA',
+                                                               tds[4].text if tds[4].text.strip() else 'NA',
+                                                               tds[5].text if tds[5].text.strip() else 'NA',
+                                                               tds[6].text if tds[6].text.strip() else 'NA',
+                                                               tds[7].text if tds[7].text.strip() else 'NA',
+                                                               tds[8].text if tds[8].text.strip() else 'NA',
+                                                               tds[9].text if tds[9].text.strip() else 'NA',
+                                                               tds[10].text if tds[10].text.strip() else 'NA',
+                                                               tds[11].text if tds[11].text.strip() else 'NA',
+                                                               tds[12].text if tds[12].text.strip() else 'NA',))
+
+    # 파일 닫기
+file.close()
+print('날씨 데이터 수집완료!')
+
+
+
+
 
