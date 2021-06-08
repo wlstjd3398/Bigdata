@@ -9,37 +9,46 @@ from selenium import webdriver
 # 가상 브라우저 실행
 browser = webdriver.Chrome('./chromedriver.exe')
 
+
 # 페이지 이동
 browser.get('https://movie.naver.com/')
 
+
 # 영화 랭킹 클릭
-btn_ranking = browser.find_elements_by_css_selector('#scrollbar > div.scrollbar-box > div > div > ul > li:nth-child(3) > a')
+btn_ranking = browser.find_element_by_css_selector('#scrollbar > div.scrollbar-box > div > div > ul > li:nth-child(3) > a')
 btn_ranking.click()
 
 
 # 평점순 클릭
-btn_score = browser.find_element_by_css_selector('')
+btn_score = browser.find_element_by_css_selector('#old_content > div.tab_type_6 > ul > li:nth-child(3) > a')
 btn_score.click()
 
+
 # 순위별 영화 클릭
-titles = browser.find_element_by_css_selector('#old_content > table > tbody > tr > td.title > div > a')
+titles = browser.find_elements_by_css_selector('#old_content > table > tbody > tr > td.title > div > a')
 titles[0].click()
 
+
 # 영화 평점 클릭
-menu_score = browser.find_element_by_css_selector('')
+menu_score = browser.find_element_by_css_selector('#movieEndTabMenu > li:nth-child(5) > a')
 menu_score.click()
+
 
 # 현재 가상 브라우저를 영화리뷰가 있는 iframe으로 전환
 browser.switch_to.frame('pointAfterListIframe')
 
-# 영화 리뷰 출력
-lis = browser.find_elements_by_css_selector('body > div > div > div.score_result > ul > li')
+while True:
+    # 영화 리뷰 출력
+    lis = browser.find_elements_by_css_selector('body > div > div > div.score_result > ul > li')
 
+    for li in lis:
+        score = li.find_element_by_css_selector('div.star_score > em').text
+        reple = li.find_element_by_css_selector('div.score_reple > p > span:last-child').text
 
-for li in lis:
-    score = li.find_element_by_css_selector('div.star_score > em').text
-    reple = li.find_element_by_css_selector('').text
+        print('{},{}'.format(score, reple))
 
-    print('{},{}'.format(score, reple))
+    # 다음 페이지 클릭
+    btn_next = browser.find_element_by_css_selector('body > div > div > div.paging > div > a:last-child')
+    btn_next.click()
 
-    
+print('영화 리뷰 수집완료...')
